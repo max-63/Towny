@@ -96,6 +96,24 @@ public class ConfirmationHandler {
 		confirmations.put(sender, new ConfirmationContext(confirmation, task));
 	}
 
+	public static void sendConfirmationSilently(CommandSender sender, Confirmation confirmation) {
+		// 1. Nettoyage si une confirmation existe déjà
+		if (confirmations.containsKey(sender)) {
+			revokeConfirmation(sender);
+		}
+		
+		// 2. Création du timer de timeout (pour que la confirmation expire après X secondes)
+		final ScheduledTask task = plugin.getScheduler().runLater(() -> {
+			if (hasConfirmation(sender)) {
+				confirmations.remove(sender);
+				BukkitTools.fireEvent(new ConfirmationCancelEvent(confirmation, sender, true));
+			}
+		}, (20L * confirmation.getDuration()));
+
+		// 3. Mise en mémoire de la transaction
+		confirmations.put(sender, new ConfirmationContext(confirmation, task));
+	}
+
 	/**
 	 * Internal use only.
 	 * 

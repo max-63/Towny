@@ -27,6 +27,7 @@ import com.palmergames.bukkit.towny.listeners.TownyBlockListener;
 import com.palmergames.bukkit.towny.listeners.TownyCustomListener;
 import com.palmergames.bukkit.towny.listeners.TownyEntityListener;
 import com.palmergames.bukkit.towny.listeners.TownyEntityMonitorListener;
+import com.palmergames.bukkit.towny.listeners.TownyGUISender;
 import com.palmergames.bukkit.towny.listeners.TownyInventoryListener;
 import com.palmergames.bukkit.towny.listeners.TownyLoginListener;
 import com.palmergames.bukkit.towny.listeners.TownyPlayerListener;
@@ -196,6 +197,7 @@ public class Towny extends JavaPlugin {
 			plugin.getLogger().info("Version: " + version + " - Plugin Enabled");
 		}
 		Bukkit.getLogger().info("=============================================================");
+
 
 		if (!isError()) {
 			TownyAsciiMap.initialize();
@@ -498,6 +500,9 @@ public class Towny extends JavaPlugin {
 		pluginManager.registerEvents(new TownyBlockListener(this), this);
 		pluginManager.registerEvents(new TownyEntityListener(this), this);
 		pluginManager.registerEvents(new TownyInventoryListener(this), this);
+
+		//GUIS:
+		getServer().getPluginManager().registerEvents(new TownyGUISender(), this);
 
 		new TownyPaperEvents(this).register();
 	}

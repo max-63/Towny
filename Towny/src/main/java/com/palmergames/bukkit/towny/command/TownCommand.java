@@ -2659,6 +2659,7 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 
 		// Send a confirmation before taking their money and throwing the PreNewTownEvent.
 		final String finalName = name;
+		
 		Confirmation.runOnAccept(() -> {
 			try {
 				if (!TownyAPI.getInstance().isWilderness(spawnLocation)) {

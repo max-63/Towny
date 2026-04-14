@@ -1,10 +1,18 @@
 package com.palmergames.bukkit.towny.confirmations;
 
 import com.palmergames.bukkit.towny.object.Translatable;
+
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
 import com.palmergames.bukkit.towny.TownySettings;
 import com.palmergames.bukkit.towny.event.CancellableTownyEvent;
+
+import io.th0rgal.oraxen.api.OraxenItems;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.Component;
 
 /**
  * A class responsible for assembling confirmations.
@@ -143,7 +151,52 @@ public class ConfirmationBuilder {
 	 * @param sender The sender to send the confirmation to.
 	 */
 	public void sendTo(CommandSender sender) {
+		if (sender instanceof Player player) {
+			// On cible uniquement la création de ville
+			if (this.transaction != null && "New Town Cost".equals(this.transaction.getLoggedMessage())) {
+				
+				Confirmation confirmation = build();
+				
+				// Appel de notre nouvelle méthode SILENCIEUSE
+				ConfirmationHandler.sendConfirmationSilently(player, confirmation);
+
+				// Création de l'inventaire
+				Component titleComp = MiniMessage.miniMessage().deserialize("<shift:-8><glyph:towny_confirm_create>");
+				Inventory gui = Bukkit.createInventory(null, 54, titleComp);
+
+				if (OraxenItems.exists("empty_slot")) {
+					// Création du bouton Confirmer (Vert)
+					org.bukkit.inventory.ItemStack confirmBtn = OraxenItems.getItemById("empty_slot").build();
+					applyMeta(confirmBtn, "<green>Confirmer", "<gray>Valider la création de la ville");
+
+					// Création du bouton Annuler (Rouge)
+					org.bukkit.inventory.ItemStack cancelBtn = OraxenItems.getItemById("empty_slot").build();
+					applyMeta(cancelBtn, "<red>Annuler", "<gray>Abandonner");
+
+					// Placement sur les slots demandés
+					int[] acceptSlots = {20, 21, 29, 30};
+					int[] denySlots = {23, 24, 32, 33};
+
+					for (int s : acceptSlots) gui.setItem(s, confirmBtn);
+					for (int s : denySlots) gui.setItem(s, cancelBtn);
+				}
+
+				player.openInventory(gui);
+				return; 
+			}
+		}
+
+		// Comportement standard pour les autres messages (chat normal)
 		Confirmation confirmation = build();
 		ConfirmationHandler.sendConfirmation(sender, confirmation);
+	}
+
+	// Utilitaire pour le texte des items
+	private void applyMeta(org.bukkit.inventory.ItemStack item, String name, String lore) {
+		var meta = item.getItemMeta();
+		if (meta == null) return;
+		meta.displayName(MiniMessage.miniMessage().deserialize("<!italic>" + name));
+		meta.lore(java.util.List.of(MiniMessage.miniMessage().deserialize("<!italic>" + lore)));
+		item.setItemMeta(meta);
 	}
 }
